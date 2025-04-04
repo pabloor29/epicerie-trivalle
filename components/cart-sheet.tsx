@@ -1,6 +1,6 @@
 "use client"
 
-import { type ReactNode, useState } from "react"
+import { type ReactNode, useState , useRef } from "react"
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,12 +21,14 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
 import { formatPrice } from "@/lib/utils"
+import emailjs from "@emailjs/browser";
 
 interface CartSheetProps {
   children: ReactNode
 }
 
 export function CartSheet({ children }: CartSheetProps) {
+
   const { items, removeItem, updateQuantity, clearCart } = useCart()
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -35,11 +37,37 @@ export function CartSheet({ children }: CartSheetProps) {
     name: "",
     email: "",
     phone: "",
-    notes: "",
   })
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0)
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  
+  const formRef = useRef<HTMLFormElement>(null);
+  const sendEmail = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log("email en cours d'envoie...");
+
+    if (!formRef.current) {
+        console.error("Le formulaire n'est pas disponible !");
+        return;
+    }
+
+    const formElement = formRef.current;
+
+    Promise.all([
+        emailjs.sendForm("service_pablo_001", "template_cmd_001", formElement, "Hj5zsN3OJSMAXQ9TV"),
+        //emailjs.sendForm("service_carbo", "template_resa_002", formElement, "Bdh3AwRMePW399mo-")
+    ])
+    .then(() => {
+        formRef.current?.reset();
+    })
+    .catch(error => {
+        console.error("Erreur lors de l'envoi des emails :", error);
+    });
+
+    handleSubmitOrder();
+  };
 
   const handleSubmitOrder = async () => {
     if (items.length === 0) return
@@ -179,67 +207,80 @@ export function CartSheet({ children }: CartSheetProps) {
 
       {/* Checkout Dialog */}
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Finaliser votre commande</DialogTitle>
-            <DialogDescription>Remplissez vos informations pour valider votre commande</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Nom complet *</Label>
-              <Input
-                id="name"
-                value={customer.name}
-                onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={customer.email}
-                onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              <Input
-                id="phone"
-                value={customer.phone}
-                onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Notes (allergies, instructions spéciales...)</Label>
-              <Textarea
-                id="notes"
-                value={customer.notes}
-                onChange={(e) => setCustomer({ ...customer, notes: e.target.value })}
-              />
-            </div>
-            <div className="mt-2">
-              <div className="flex justify-between mb-2">
-                <span>Sous-total</span>
-                <span>{formatPrice(subtotal)}</span>
+          <DialogContent className="sm:max-w-[425px]">
+            <form 
+              ref={formRef}
+              onSubmit={sendEmail}
+            >
+              {items.map((item, index) => (
+                <div key={item.id} className="hidden">
+                  <input type="hidden" name={`itemsName_${index}`} value={item.name} />
+                  <input type="hidden" name={`itemsUnitPrice_${index}`} value={item.price} />
+                  <input type="hidden" name={`itemsQuantity_${index}`} value={item.quantity} />
+                  <input type="hidden" name={`itemsTotalPrice_${index}`} value={item.price * item.quantity} />
+                </div>
+              ))}
+              <input type="hidden" name="subtotal" value={subtotal} />
+            <DialogHeader>
+              <DialogTitle>Finaliser votre commande</DialogTitle>
+              <DialogDescription>Remplissez vos informations pour valider votre commande</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Nom complet *</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={customer.name}
+                  onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                  required
+                />
               </div>
-              <div className="flex justify-between font-bold">
-                <span>Total</span>
-                <span>{formatPrice(subtotal)}</span>
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={customer.email}
+                  onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={customer.phone}
+                  onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                />
+              </div>
+              <div className="mt-2">
+                <div className="flex justify-between mb-2">
+                  <span>Sous-total</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCheckoutOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSubmitOrder} disabled={isSubmitting}>
-              {isSubmitting ? "Traitement..." : "Confirmer la commande"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCheckoutOpen(false)}>
+                Annuler
+              </Button>
+              <Button 
+                type="submit"
+                //onClick={handleSubmitOrder}
+                disabled={isSubmitting}
+                >
+                {isSubmitting ? "Traitement..." : "Confirmer la commande"}
+              </Button>
+            </DialogFooter>
+            </form>
+          </DialogContent>
       </Dialog>
     </Sheet>
   )
