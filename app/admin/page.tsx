@@ -38,7 +38,7 @@ export default function AdminPage() {
           </Link>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
           <h2 className="text-xl font-semibold mb-4">Gestion des commandes</h2>
           <p className="text-gray-600 mb-4">Consultez et gérez les commandes de vos clients.</p>
           <Link
@@ -47,7 +47,7 @@ export default function AdminPage() {
           >
             Gérer les commandes
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -1,6 +1,8 @@
 "use client"
 
-import { type ReactNode, useState , useRef } from "react"
+import type React from "react"
+
+import { type ReactNode, useState, useRef } from "react"
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -18,17 +20,20 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
 import { formatPrice } from "@/lib/utils"
-import emailjs from "@emailjs/browser";
+import emailjs from "@emailjs/browser"
+import { registerLocale, setDefaultLocale } from "react-datepicker"
+import { fr } from "date-fns/locale"
+
+registerLocale("fr", fr)
+setDefaultLocale("fr")
 
 interface CartSheetProps {
   children: ReactNode
 }
 
 export function CartSheet({ children }: CartSheetProps) {
-
   const { items, removeItem, updateQuantity, clearCart } = useCart()
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,37 +42,38 @@ export function CartSheet({ children }: CartSheetProps) {
     name: "",
     email: "",
     phone: "",
+    eventDate: "",
+    eventTime: "",
   })
 
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0)
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-  
-  const formRef = useRef<HTMLFormElement>(null);
-  const sendEmail = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // Count the number of different articles
+  const uniqueItemsCount = items.length
 
-    console.log("email en cours d'envoie...");
+  const formRef = useRef<HTMLFormElement>(null)
+  const sendEmail = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    console.log("email en cours d'envoi...")
 
     if (!formRef.current) {
-        console.error("Le formulaire n'est pas disponible !");
-        return;
+      console.error("Le formulaire n'est pas disponible !")
+      return
     }
 
-    const formElement = formRef.current;
+    // Utiliser sendForm qui utilise les champs du formulaire
+    emailjs
+      .sendForm("service_pablo_001", "template_cmd_001", formRef.current, "Hj5zsN3OJSMAXQ9TV")
+      .then(() => {
+        console.log("Email envoyé avec succès !")
+      })
+      .catch((error) => {
+        console.error("Erreur lors de l'envoi de l'email :", error)
+      })
 
-    Promise.all([
-        emailjs.sendForm("service_pablo_001", "template_cmd_001", formElement, "Hj5zsN3OJSMAXQ9TV"),
-        //emailjs.sendForm("service_carbo", "template_resa_002", formElement, "Bdh3AwRMePW399mo-")
-    ])
-    .then(() => {
-        formRef.current?.reset();
-    })
-    .catch(error => {
-        console.error("Erreur lors de l'envoi des emails :", error);
-    });
-
-    handleSubmitOrder();
-  };
+    handleSubmitOrder()
+  }
 
   const handleSubmitOrder = async () => {
     if (items.length === 0) return
@@ -121,6 +127,27 @@ export function CartSheet({ children }: CartSheetProps) {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // État et fonctions pour le dropdown des heures
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedValue, setSelectedValue] = useState("")
+
+  const options = [
+    "08:00 - 10:00",
+    "10:00 - 12:00",
+    "14:00 - 16:00",
+    "16:00 - 18:00",
+  ]
+
+  const handleSelect = (value: string) => {
+    setSelectedValue(value)
+    setCustomer({ ...customer, eventTime: value })
+    setIsOpen(false)
+  }
+
+  const toggleDropdown = () => {
+    setIsOpen((prev) => !prev)
   }
 
   return (
@@ -207,20 +234,36 @@ export function CartSheet({ children }: CartSheetProps) {
 
       {/* Checkout Dialog */}
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
-          <DialogContent className="sm:max-w-[425px]">
-            <form 
-              ref={formRef}
-              onSubmit={sendEmail}
-            >
-              {items.map((item, index) => (
-                <div key={item.id} className="hidden">
-                  <input type="hidden" name={`itemsName_${index}`} value={item.name} />
-                  <input type="hidden" name={`itemsUnitPrice_${index}`} value={item.price} />
-                  <input type="hidden" name={`itemsQuantity_${index}`} value={item.quantity} />
-                  <input type="hidden" name={`itemsTotalPrice_${index}`} value={item.price * item.quantity} />
-                </div>
-              ))}
-              <input type="hidden" name="subtotal" value={subtotal} />
+        <DialogContent className="sm:max-w-[425px]">
+          <form ref={formRef} onSubmit={sendEmail}>
+            {/* Nombre d'articles pour le template */}
+            <input type="hidden" name="itemCount" value={uniqueItemsCount} />
+
+            {/* Informations sur les articles - IMPORTANT: les index commencent à 1 pour EmailJS */}
+            {items.map((item, index) => (
+              <div key={item.id} className="hidden">
+                <input type="hidden" name={`itemsName_${index + 1}`} value={item.name} />
+                <input type="hidden" name={`itemsUnitPrice_${index + 1}`} value={`${formatPrice(item.price)}`} />
+                <input type="hidden" name={`itemsQuantity_${index + 1}`} value={item.quantity} />
+                <input
+                  type="hidden"
+                  name={`itemsTotalPrice_${index + 1}`}
+                  value={`${formatPrice(item.price * item.quantity)}`}
+                />
+                <input type="hidden" name={`display_item_${index + 1}`} value="table-row" />
+              </div>
+            ))}
+
+            {/* Variables pour cacher les lignes non utilisées */}
+            {Array.from({ length: 60 - items.length }).map((_, index) => (
+              <div key={`empty-${index}`} className="hidden">
+                <input type="hidden" name={`display_item_${items.length + index + 1}`} value="none" />
+              </div>
+            ))}
+
+            {/* Sous-total */}
+            <input type="hidden" name="subtotal" value={`${formatPrice(subtotal)}`} />
+
             <DialogHeader>
               <DialogTitle>Finaliser votre commande</DialogTitle>
               <DialogDescription>Remplissez vos informations pour valider votre commande</DialogDescription>
@@ -256,6 +299,73 @@ export function CartSheet({ children }: CartSheetProps) {
                   onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
                 />
               </div>
+
+              <div className="flex flex-col lg:flex-row justify-between items-start pb-4 lg:space-x-10 space-y-8 lg:space-y-0">
+                <div className="lg:w-1/2 w-full">
+                  <Label htmlFor="datePicker">Date *</Label>
+                  <Input
+                    type="date"
+                    id="datePicker"
+                    name="eventDate"
+                    required
+                    defaultValue=""
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => {
+                      const date = new Date(e.target.value)
+                      const day = date.getDay()
+
+                      if (day === 0 || day === 1) {
+                        // Dimanche (0) ou Lundi (1)
+                        e.target.value = ""
+                        toast({
+                          title: "Jour non disponible",
+                          description:
+                            "Les lundis et dimanches sont des jours de fermeture. Veuillez choisir un autre jour.",
+                          variant: "destructive",
+                        })
+                      } else {
+                        setCustomer({ ...customer, eventDate: e.target.value })
+                      }
+                    }}
+                  />
+                  <p className="text-sm pt-1 text-muted-foreground">(jours de fermeture: lundi et dimanche)</p>
+                </div>
+
+                <div className="relative lg:w-1/2 w-full">
+                  <Label htmlFor="eventTime">Heure *</Label>
+                  <Input
+                    type="text"
+                    id="eventTime"
+                    name="eventTime"
+                    value={selectedValue}
+                    onClick={toggleDropdown}
+                    onChange={(e) => {
+                      setSelectedValue(e.target.value)
+                      setCustomer({ ...customer, eventTime: e.target.value })
+                    }}
+                    placeholder=""
+                    required
+                  />
+
+                  {isOpen && (
+                    <ul
+                      className="absolute w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10"
+                      style={{ maxHeight: "200px", overflowY: "auto" }}
+                    >
+                      {options.map((option, index) => (
+                        <li
+                          key={index}
+                          className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSelect(option)}
+                        >
+                          {option}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
               <div className="mt-2">
                 <div className="flex justify-between mb-2">
                   <span>Sous-total</span>
@@ -271,16 +381,12 @@ export function CartSheet({ children }: CartSheetProps) {
               <Button variant="outline" onClick={() => setIsCheckoutOpen(false)}>
                 Annuler
               </Button>
-              <Button 
-                type="submit"
-                //onClick={handleSubmitOrder}
-                disabled={isSubmitting}
-                >
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Traitement..." : "Confirmer la commande"}
               </Button>
             </DialogFooter>
-            </form>
-          </DialogContent>
+          </form>
+        </DialogContent>
       </Dialog>
     </Sheet>
   )
