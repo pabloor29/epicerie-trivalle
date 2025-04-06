@@ -1,10 +1,46 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Plus, Edit, Trash2, Loader2, Check, AlertTriangle } from "lucide-react"
+import {
+  ArrowLeft,
+  Plus,
+  Edit,
+  Trash2,
+  Loader2,
+  Check,
+  AlertTriangle,
+  Apple,
+  Beer,
+  Beef,
+  ChevronsUpIcon as Cheese,
+  Coffee,
+  Grape,
+  Milk,
+  ShoppingBasket,
+  Banana,
+  Cherry,
+  Fish,
+  Egg,
+  Salad,
+  Sandwich,
+  Pizza,
+  Cake,
+  IceCream,
+  Candy,
+  Popcorn,
+  Cookie,
+  Croissant,
+  Soup,
+  Carrot,
+  CitrusIcon as Lemon,
+  Wheat,
+  Wine,
+  Utensils,
+  type LucideIcon,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,6 +64,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 // Types
 interface Category {
@@ -35,6 +72,37 @@ interface Category {
   name: string
   slug: string
   icon: string | null
+}
+
+// Mapping des icônes disponibles
+const iconComponents: Record<string, LucideIcon> = {
+  Apple,
+  Beer,
+  Beef,
+  Cheese,
+  Coffee,
+  Grape,
+  Milk,
+  ShoppingBasket,
+  Banana,
+  Cherry,
+  Fish,
+  Egg,
+  Salad,
+  Sandwich,
+  Pizza,
+  Cake,
+  IceCream,
+  Candy,
+  Popcorn,
+  Cookie,
+  Croissant,
+  Soup,
+  Carrot,
+  Lemon,
+  Wheat,
+  Wine,
+  Utensils,
 }
 
 export function CategoriesAdminPage() {
@@ -45,6 +113,7 @@ export function CategoriesAdminPage() {
   const [currentCategory, setCurrentCategory] = useState<Partial<Category> | null>(null)
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isIconSelectorOpen, setIsIconSelectorOpen] = useState(false)
   const { toast } = useToast()
 
   // Charger les catégories
@@ -203,6 +272,20 @@ export function CategoriesAdminPage() {
     }
   }
 
+  // Sélectionner une icône
+  const handleSelectIcon = (iconName: string) => {
+    setCurrentCategory((prev) => ({ ...prev, icon: iconName }))
+    setIsIconSelectorOpen(false)
+  }
+
+  // Obtenir le composant d'icône à partir du nom
+  const getIconComponent = (iconName: string | null): LucideIcon => {
+    if (iconName && iconComponents[iconName]) {
+      return iconComponents[iconName]
+    }
+    return Coffee // Icône par défaut
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-6">
@@ -242,23 +325,36 @@ export function CategoriesAdminPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell>{category.slug}</TableCell>
-                    <TableCell>{category.icon || "-"}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditCategory(category)}>
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Modifier</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(category)}>
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                        <span className="sr-only">Supprimer</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {categories.map((category) => {
+                  const IconComponent = getIconComponent(category.icon)
+
+                  return (
+                    <TableRow key={category.id}>
+                      <TableCell className="font-medium">{category.name}</TableCell>
+                      <TableCell>{category.slug}</TableCell>
+                      <TableCell>
+                        {category.icon ? (
+                          <div className="flex items-center">
+                            <IconComponent className="h-5 w-5 mr-2" />
+                            <span>{category.icon}</span>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => handleEditCategory(category)}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Modifier</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(category)}>
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <span className="sr-only">Supprimer</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
@@ -290,13 +386,57 @@ export function CategoriesAdminPage() {
                 <Label htmlFor="icon" className="text-right">
                   Icône
                 </Label>
-                <Input
-                  id="icon"
-                  value={currentCategory?.icon || ""}
-                  onChange={(e) => setCurrentCategory((prev) => ({ ...prev, icon: e.target.value }))}
-                  className="col-span-3"
-                  placeholder="Nom de l'icône (ex: Apple, Coffee, etc.)"
-                />
+                <div className="col-span-3 flex items-center">
+                  <div
+                    className="flex items-center border rounded-md p-2 cursor-pointer hover:bg-gray-100 mr-2"
+                    onClick={() => setIsIconSelectorOpen(!isIconSelectorOpen)}
+                  >
+                    {currentCategory?.icon ? (
+                      <>
+                        {React.createElement(getIconComponent(currentCategory.icon), { className: "h-5 w-5 mr-2" })}
+                        <span>{currentCategory.icon}</span>
+                      </>
+                    ) : (
+                      <span className="text-gray-500">Sélectionner une icône</span>
+                    )}
+                  </div>
+                  {currentCategory?.icon && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentCategory((prev) => ({ ...prev, icon: "" }))}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Supprimer l'icône</span>
+                    </Button>
+                  )}
+                </div>
+
+                {isIconSelectorOpen && (
+                  <div className="col-span-3 col-start-2 mt-2">
+                    <div className="border rounded-md p-4">
+                      <h3 className="font-medium mb-2">Choisissez une icône</h3>
+                      <ScrollArea className="h-[200px]">
+                        <div className="grid grid-cols-6 gap-2">
+                          {Object.entries(iconComponents).map(([name, Icon]) => (
+                            <div
+                              key={name}
+                              className={`flex flex-col items-center justify-center p-2 rounded-md cursor-pointer hover:bg-gray-100 ${
+                                currentCategory?.icon === name ? "bg-blue-100 border border-blue-300" : ""
+                              }`}
+                              onClick={() => handleSelectIcon(name)}
+                              title={name}
+                            >
+                              <Icon className="h-6 w-6 mb-1" />
+                              {/* <span className="text-xs text-center truncate w-full">{name}</span> */}
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter>

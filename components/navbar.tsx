@@ -45,19 +45,19 @@ export function Navbar() {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/" className={`text-sm font-medium ${isActive("/") ? "text-green-600" : "hover:text-green-600"}`}>
+        <nav className="hidden md:flex items-center space-x-6 z-50">
+          <Link href="/" className={`text-sm font-medium ${isActive("/") ? "text-blue-800" : "hover:text-blue-800"}`}>
             Accueil
           </Link>
           <Link
             href="/epicerie"
-            className={`text-sm font-medium ${isActive("/epicerie") ? "text-green-600" : "hover:text-green-600"}`}
+            className={`text-sm font-medium ${isActive("/epicerie") ? "text-blue-800" : "hover:text-blue-800"}`}
           >
             Produits
           </Link>
           <Link
             href="/contact"
-            className={`text-sm font-medium ${isActive("/contact") ? "text-green-600" : "hover:text-green-600"}`}
+            className={`text-sm font-medium ${isActive("/contact") ? "text-blue-800" : "hover:text-blue-800"}`}
           >
             Contact
           </Link>

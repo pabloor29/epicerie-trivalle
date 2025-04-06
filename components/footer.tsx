@@ -1,8 +1,9 @@
+import { Instagram, Mail, MapPin, Phone } from "lucide-react"
 import Link from "next/link"
 
 export function Footer() {
   return (
-    <footer className="bg-slate-100 py-12">
+    <footer className="bg-slate-100 py-12 z-50">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
@@ -34,18 +35,31 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Horaires</h3>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li>Lundi - Vendredi: 9h00 - 19h00</li>
-              <li>Samedi: 9h00 - 20h00</li>
-              <li>Dimanche: 10h00 - 13h00</li>
+              <li>Lundi - Dimanche: 8h00 - 21h00</li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li>123 Rue du Commerce, 75001 Paris</li>
-              <li>01 23 45 67 89</li>
-              <li>contact@epicerieduquartier.fr</li>
+              <li className="flex items-end gap-2">
+                <MapPin className="text-blue-800" />
+                <p>
+                  123 Rue du Commerce, 75001 Paris
+                </p>
+              </li>
+              <li className="flex items-end gap-2">
+                <Phone className="text-blue-800" />
+                <a href="tel:+33603920724">+33 6 03 92 07 24</a>
+              </li>
+              <li className="flex items-end gap-2">
+                <Mail className="text-blue-800" />
+                <a href="mailto:">example@gmail.com</a>
+              </li>
+              <li className="flex items-end gap-2">
+                <Instagram className="text-blue-800" />
+                <a href="">@insta</a>
+              </li>
             </ul>
           </div>
         </div>

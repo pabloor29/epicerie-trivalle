@@ -8,11 +8,21 @@ export const metadata = {
 export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Contactez-nous</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center">Venez nous rendre visite !</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
-        <div className="bg-slate-200 h-[400px] rounded-lg flex items-center justify-center">
-          <p className="text-slate-600">Carte de localisation</p>
+        <div className="flex items-center justify-center">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2908.021857641856!2d2.3590742763361434!3d43.2090308810449!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12ae2db0bf9f7179%3A0x2c61c00ed9ed09f9!2sL&#39;%C3%A9choppe%20rue%20trivalle!5e0!3m2!1sfr!2sfr!4v1743965978615!5m2!1sfr!2sfr" 
+            width="600"
+            height="450" 
+            loading="lazy"
+            style={{ 
+              border: 10,
+              borderRadius: 25
+             }}
+          >
+          </iframe>
         </div>
 
         <div className="flex flex-col justify-center">
@@ -20,44 +30,42 @@ export default function ContactPage() {
 
           <div className="space-y-6">
             <div className="flex items-start">
-              <MapPin className="h-6 w-6 mr-3 text-green-600 flex-shrink-0" />
+              <MapPin className="h-6 w-6 mr-3 text-blue-800 flex-shrink-0" />
               <div>
                 <h3 className="font-medium">Adresse</h3>
                 <p className="mt-1">
-                  123 Rue du Commerce
+                  30 rue Trivalle
                   <br />
-                  75001 Paris, France
+                  11000 Carcassonne, France
                 </p>
               </div>
             </div>
 
             <div className="flex items-start">
-              <Clock className="h-6 w-6 mr-3 text-green-600 flex-shrink-0" />
+              <Clock className="h-6 w-6 mr-3 text-blue-800 flex-shrink-0" />
               <div>
                 <h3 className="font-medium">Horaires d&apos;ouverture</h3>
                 <p className="mt-1">
-                  Lundi - Vendredi: 9h00 - 19h00
-                  <br />
-                  Samedi: 9h00 - 20h00
-                  <br />
-                  Dimanche: 10h00 - 13h00
+                  Lundi - Dimanche: 8h00 - 21h00
                 </p>
               </div>
             </div>
 
             <div className="flex items-start">
-              <Phone className="h-6 w-6 mr-3 text-green-600 flex-shrink-0" />
+              <Phone className="h-6 w-6 mr-3 text-blue-800 flex-shrink-0" />
               <div>
                 <h3 className="font-medium">Téléphone</h3>
-                <p className="mt-1">01 23 45 67 89</p>
+                <a href="tel:+33603920724">+33 6 03 92 07 24</a>
               </div>
             </div>
 
             <div className="flex items-start">
-              <Mail className="h-6 w-6 mr-3 text-green-600 flex-shrink-0" />
+              <Mail className="h-6 w-6 mr-3 text-blue-800 flex-shrink-0" />
               <div>
                 <h3 className="font-medium">Email</h3>
-                <p className="mt-1">contact@epicerieduquartier.fr</p>
+                <a href="mailto:">
+                  example@gmail.com
+                </a>
               </div>
             </div>
           </div>
